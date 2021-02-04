@@ -1,0 +1,28 @@
+.SUFFIXES: .c .o .lo
+
+COMPILE = $(CC) $(CFLAGS)
+INC_PATH = -I../../common -I../../include -I/usr/local/include
+LIB_PATH = -L.. $(LIBS) -lfdirclient -lfastcommon
+TARGET_PATH = $(TARGET_PREFIX)/bin
+
+STATIC_OBJS =
+
+ALL_PRGS = fdir_mkdir fdir_remove fdir_rename fdir_stat fdir_list \
+           fdir_service_stat fdir_cluster_stat
+
+all: $(STATIC_OBJS) $(ALL_PRGS)
+
+.o:
+	$(COMPILE) -o $@ $<  $(STATIC_OBJS) $(LIB_PATH) $(INC_PATH)
+.c:
+	$(COMPILE) -o $@ $<  $(STATIC_OBJS) $(LIB_PATH) $(INC_PATH)
+.c.o:
+	$(COMPILE) -c -o $@ $<  $(INC_PATH)
+
+install:
+	mkdir -p $(TARGET_PATH)
+	cp -f $(ALL_PRGS) $(TARGET_PATH)
+
+clean:
+	rm -f $(STATIC_OBJS) $(ALL_PRGS)
+

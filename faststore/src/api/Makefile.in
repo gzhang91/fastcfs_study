@@ -1,0 +1,48 @@
+.SUFFIXES: .c .o .lo
+
+COMPILE = $(CC) $(CFLAGS)
+INC_PATH = -I../common -I../include
+LIB_PATH = -L../client $(LIBS) -lfsclient -lfdirclient -lfastcommon -lserverframe
+TARGET_LIB = $(TARGET_PREFIX)/$(LIB_VERSION)
+
+API_SHARED_OBJS = fs_api.lo otid_htable.lo obid_htable.lo timeout_handler.lo \
+                  fs_api_allocator.lo combine_handler.lo
+
+API_STATIC_OBJS = fs_api.o otid_htable.o obid_htable.o timeout_handler.o \
+                  fs_api_allocator.o combine_handler.o
+
+HEADER_FILES = fs_api.h fs_api_types.h otid_htable.h obid_htable.h \
+               timeout_handler.h fs_api_allocator.h combine_handler.h
+
+ALL_OBJS = $(API_STATIC_OBJS) $(API_SHARED_OBJS)
+
+ALL_PRGS = test_otid_htable
+SHARED_LIBS = libfsapi.so
+STATIC_LIBS = libfsapi.a
+ALL_LIBS = $(SHARED_LIBS) $(STATIC_LIBS)
+
+all: $(ALL_OBJS) $(ALL_PRGS) $(ALL_LIBS)
+libfsapi.so: $(API_SHARED_OBJS)
+	$(COMPILE) -o $@ -shared $(API_SHARED_OBJS) $(LIB_PATH)
+libfsapi.a: $(API_STATIC_OBJS)
+	ar rcs $@ $(API_STATIC_OBJS)
+.o:
+	$(COMPILE) -o $@ $<  $(API_STATIC_OBJS) $(LIB_PATH) $(INC_PATH)
+.c:
+	$(COMPILE) -o $@ $<  $(API_STATIC_OBJS) $(LIB_PATH) $(INC_PATH)
+.c.o:
+	$(COMPILE) -c -o $@ $<  $(INC_PATH)
+.c.lo:
+	$(COMPILE) -c -fPIC -o $@ $<  $(INC_PATH)
+install:
+	mkdir -p $(TARGET_LIB)
+	mkdir -p $(TARGET_PREFIX)/lib
+	mkdir -p $(TARGET_PREFIX)/include/fastsore/api
+
+	install -m 755 $(SHARED_LIBS) $(TARGET_LIB)
+	install -m 644 $(HEADER_FILES) $(TARGET_PREFIX)/include/fastsore/api
+	@BUILDROOT=$$(echo "$(TARGET_PREFIX)" | grep BUILDROOT); \
+	if [ -z "$$BUILDROOT" ] && [ ! -e $(TARGET_PREFIX)/lib/libfsapi.so ]; then ln -s $(TARGET_LIB)/libfsapi.so $(TARGET_PREFIX)/lib/libfsapi.so; fi
+clean:
+	rm -f $(ALL_OBJS) $(ALL_PRGS) $(ALL_LIBS)
+

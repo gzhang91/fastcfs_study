@@ -1,0 +1,37 @@
+.SUFFIXES: .c .o
+
+COMPILE = $(CC) $(CFLAGS)
+INC_PATH = -I/usr/local/include -I..
+LIB_PATH = $(LIBS) -lfastcommon -lserverframe
+TARGET_PATH = $(TARGET_PREFIX)/bin
+CONFIG_PATH = $(TARGET_CONF_PATH)
+
+ALL_OBJS = ../common/fdir_proto.o ../common/fdir_global.o server_func.o \
+           common_handler.o service_handler.o cluster_handler.o \
+           server_global.o dentry.o flock.o inode_index.o \
+           cluster_relationship.o data_thread.o data_loader.o \
+           inode_generator.o server_binlog.o cluster_info.o \
+           binlog/binlog_producer.o binlog/binlog_local_consumer.o \
+           binlog/binlog_write.o binlog/binlog_read_thread.o     \
+           binlog/binlog_replication.o binlog/replica_consumer_thread.o \
+           binlog/binlog_func.o binlog/binlog_reader.o binlog/binlog_pack.o \
+           binlog/binlog_replay.o binlog/push_result_ring.o
+
+ALL_PRGS = fdir_serverd
+
+all: $(ALL_PRGS)
+
+$(ALL_PRGS): $(ALL_OBJS)
+
+.o:
+	$(COMPILE) -o $@ $<  $(LIB_PATH) $(INC_PATH)
+.c:
+	$(COMPILE) -o $@ $<  $(ALL_OBJS) $(LIB_PATH) $(INC_PATH)
+.c.o:
+	$(COMPILE) -c -o $@ $<  $(INC_PATH)
+
+install:
+	mkdir -p $(TARGET_PATH)
+	cp -f $(ALL_PRGS) $(TARGET_PATH)
+clean:
+	rm -f *.o $(ALL_OBJS) $(ALL_PRGS)

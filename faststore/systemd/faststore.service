@@ -1,0 +1,17 @@
+[Unit]
+Description=faststore service
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/opt/fastcfs/fstore/serverd.pid
+ExecStart=/usr/bin/fs_serverd /etc/fastcfs/fstore/server.conf start
+
+# No artificial start/stop timeout
+TimeoutSec=0
+
+# Disable OOM kill by Linux kernel
+OOMScoreAdjust=-1000
+
+[Install]
+WantedBy=multi-user.target
